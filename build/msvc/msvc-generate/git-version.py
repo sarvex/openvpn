@@ -53,7 +53,9 @@ def main():
 
     prev_content = ""
 
-    name = os.path.join("%s" %  (sys.argv[1] if len(sys.argv) > 1 else "."), "config-version.h")
+    name = os.path.join(
+        f'{sys.argv[1] if len(sys.argv) > 1 else "."}', "config-version.h"
+    )
     try:
         with open(name, "r") as f:
             prev_content = f.read()
@@ -65,11 +67,11 @@ def main():
     content += "#define CONFIGURE_GIT_FLAGS \"\"\n"
 
     if prev_content != content:
-        print("Writing %s" % name)
+        print(f"Writing {name}")
         with open(name, "w") as f:
             f.write(content)
     else:
-        print("Content of %s hasn't changed" % name)
+        print(f"Content of {name} hasn't changed")
 
 if __name__ == "__main__":
     main()

@@ -52,7 +52,7 @@ def load_crl(filename, format):
         else:
             with open(filename, 'rb') as f:
                 crl = crypto.load_crl(types[format], f.read())
-        return set(int(r.get_serial(), 16) for r in crl.get_revoked())
+        return {int(r.get_serial(), 16) for r in crl.get_revoked()}
 
     def try_openssl_exec(filename, format):
         args = ['openssl', 'crl', '-inform', format, '-text']
@@ -73,7 +73,7 @@ def load_crl(filename, format):
 @measure_time
 def scan_dir(dirname):
     _, _, files = next(os.walk(dirname))
-    return set(int(f) for f in files if f.isdigit())
+    return {int(f) for f in files if f.isdigit()}
 
 @measure_time
 def create_new_files(dirname, newset, oldset):
@@ -98,19 +98,22 @@ def remove_old_files(dirname, newset, oldset):
 def check_crlfile(arg):
     if arg == '-' or os.path.isfile(arg):
         return arg
-    raise argparse.ArgumentTypeError('No such file "{}"'.format(arg))
+    raise argparse.ArgumentTypeError(f'No such file "{arg}"')
 
 def check_outdir(arg):
     if os.path.isdir(arg):
         return arg
-    raise argparse.ArgumentTypeError('No such directory: "{}"'.format(arg))
+    raise argparse.ArgumentTypeError(f'No such directory: "{arg}"')
 
 def main():
     parser = argparse.ArgumentParser(description='OpenVPN CRL extractor')
-    parser.add_argument('-f', '--format',
+    parser.add_argument(
+        '-f',
+        '--format',
         type=str.upper,
-        default=FILETYPE_PEM, choices=[FILETYPE_PEM, FILETYPE_DER],
-        help='input CRL format - default {}'.format(FILETYPE_PEM)
+        default=FILETYPE_PEM,
+        choices=[FILETYPE_PEM, FILETYPE_DER],
+        help=f'input CRL format - default {FILETYPE_PEM}',
     )
     parser.add_argument('crlfile', metavar='CRLFILE|-',
         type=lambda x: check_crlfile(x),
@@ -123,16 +126,16 @@ def main():
     args = parser.parse_args()
 
     certs, t = load_crl(args.crlfile, args.format)
-    print('Loaded:  {} revoked certs in {}s'.format(len(certs), t))
+    print(f'Loaded:  {len(certs)} revoked certs in {t}s')
 
     files, t = scan_dir(args.outdir)
-    print('Scanned: {} files in {}s'.format(len(files), t))
+    print(f'Scanned: {len(files)} files in {t}s')
 
     created, t = create_new_files(args.outdir, certs, files)
-    print('Created: {} files in {}s'.format(len(created), t))
+    print(f'Created: {len(created)} files in {t}s')
 
     removed, t = remove_old_files(args.outdir, certs, files)
-    print('Removed: {} files in {}s'.format(len(removed), t))
+    print(f'Removed: {len(removed)} files in {t}s')
 
 if __name__ == "__main__":
     main()

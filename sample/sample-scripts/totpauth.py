@@ -56,20 +56,7 @@ def main():
     script_type = os.environ['script_type']
     cn = os.environ['common_name']
 
-    if script_type == 'user-pass-verify':
-        # signal text based challenge response
-        if cn in secrets:
-            extra = "CR_TEXT:E,R:Please enter your TOTP code!"
-            write_auth_pending(300, 'crtext', extra)
-
-            # Signal authentication being deferred
-            sys.exit(2)
-        else:
-            # For unknown CN we report failure. Change to 0
-            # to allow CNs without secret to auth without 2FA
-            sys.exit(1)
-
-    elif script_type == 'client-crresponse':
+    if script_type == 'client-crresponse':
         response = None
 
         # Read the crresponse from the argument file
@@ -92,6 +79,18 @@ def main():
             write_auth_control(1)
         else:
             write_auth_control(0)
+    elif script_type == 'user-pass-verify':
+        # signal text based challenge response
+        if cn in secrets:
+            write_auth_pending(300, 'crtext', "CR_TEXT:E,R:Please enter your TOTP code!")
+
+            # Signal authentication being deferred
+            sys.exit(2)
+        else:
+            # For unknown CN we report failure. Change to 0
+            # to allow CNs without secret to auth without 2FA
+            sys.exit(1)
+
     else:
         print(f"Unknown script type {script_type}")
         sys.exit(1)
