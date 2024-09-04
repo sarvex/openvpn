@@ -220,13 +220,13 @@ jobs:
     name: "mingw unittests - ${{matrix.target}} - OSSL ${{ matrix.osslver }}"
     steps:
       - name: Retrieve mingw unittest dlls
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: mingw-unittest-${{matrix.target}}-ossl${{ matrix.osslver }}-dlls
           path: unittests
 
       - name: Retrieve mingw unittest
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: mingw-unittest-${{matrix.target}}-ossl${{ matrix.osslver }}-tests
           path: unittests
